@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    #screen {
+      border: 5px solid #CCC;
+      image-rendering: pixelated;
+      width: 400px;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  
+  <canvas id="screen" width="10" height="10"></canvas>
+
+  <script>
+    const screen = document.querySelector('#screen')
+    const context = screen.getContext('2d')
+
+    const currentPlayer = 'player1'
+
+    function createGame () {
+      const state = {
+        players: {
+          'player1': { x: 1, y: 1 },
+          'player2': { x: 9, y: 9 },
+        },
+        fruits: {
+          'fruit1': { x: 3, y: 1 },
+        }
+      }
+      
+      function movePlayer(command) {
+        const keyPressed = command.keyPressed
+        const player = state.players[command.playerId]
+
+        const movement = {
+          ArrowUp: player => player.y -= 1,
+          ArrowDown: player => player.y += 1,
+          ArrowLeft: player => player.x -= 1,
+          ArrowRight: player => player.x += 1,
+        }
+
+        const move = movement[keyPressed]
+        if (move) move(player)
+      }
+
+      return {
+        movePlayer,
+        state,
+      }
+    }
+
+    const game = createGame()
+    const keyboardListener = createKeyboardListener()
+    keyboardListener.subscribe(game.movePlayer)
+
+    function createKeyboardListener() {
+      const state = {
+        observers: [],
+      }
+
+      function subscribe(observerFn) {
+        state.observers.push(observerFn)
+      }
+
+      function notifyAll(command) {
+        for(const observerFn of state.observers) {
+          observerFn(command)
+        }
+      }
+
+      document.addEventListener('keydown', handleKeyDown)
+
+      function handleKeyDown (e) {
+        const command = {
+          playerId: 'player1',
+          keyPressed: event.key,
+        }
+
+        notifyAll(command)
+      }
+
+      return {
+        subscribe
+      }
+    }
+
+    renderScreen()
+
+    function renderScreen() {
+      context.fillStyle = 'white'
+      context.clearRect(0, 0, 10, 10)
+
+      for (const id in game.state.players) {
+        const player = game.state.players[id]
+        context.fillStyle = 'black'
+        context.fillRect(player.x, player.y, 1, 1)
+      }
+
+      for (const id in game.state.fruits) {
+        const fruit = game.state.fruits[id]
+        context.fillStyle = 'red'
+        context.fillRect(fruit.x, fruit.y, 1, 1)
+      }
+
+      requestAnimationFrame(renderScreen)
+    }
+
+  </script>
+
+</body>
+</html>
