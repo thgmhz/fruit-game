@@ -26,13 +26,28 @@
 
     function createGame () {
       const state = {
-        players: {
-          'player1': { x: 1, y: 1 },
-          'player2': { x: 9, y: 9 },
-        },
-        fruits: {
-          'fruit1': { x: 3, y: 1 },
-        }
+        players: {},
+        fruits: {}
+      }
+
+      function addPlayer(command) {
+        const x = command.x
+        const y = command.y
+        state.players[command.id] = { x, y }
+      }
+
+      function removePlayer(id) {
+        delete state.players[id]
+      }
+
+      function addFruit(command) {
+        const x = command.x
+        const y = command.y
+        state.fruits[command.id] = { x, y }
+      }
+
+      function removeFruit(id) {
+        delete state.fruits[id]
       }
       
       function movePlayer(command) {
@@ -47,16 +62,47 @@
         }
 
         const move = movement[keyPressed]
-        if (move) move(player)
+        if (player && move) {
+          move(player)
+          checkForFruitCollision(player)
+        }
       }
+
+      function checkForFruitCollision(player) {
+        for (const fruitId in state.fruits) {
+          const fruit = state.fruits[fruitId]
+
+          if (player.x === fruit.x && player.y === fruit.y) {
+            removeFruit(fruitId)
+          }
+        }
+      }      
 
       return {
         movePlayer,
+        addPlayer,
+        removePlayer,
+        addFruit,
+        removeFruit,
         state,
       }
     }
 
     const game = createGame()
+    
+    game.addPlayer({
+      id: 'thiago',
+      x: 0,
+      y: 0,
+    })
+
+    game.addFruit({
+      id: 'fruit1',
+      x: 5,
+      y: 5,
+    })
+
+
     const keyboardListener = createKeyboardListener()
     keyboardListener.subscribe(game.movePlayer)
 
@@ -79,7 +125,7 @@
 
       function handleKeyDown (e) {
         const command = {
-          playerId: 'player1',
+          playerId: 'thiago',
           keyPressed: event.key,
         }
 
