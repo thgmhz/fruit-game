@@ -40,7 +40,7 @@
     })
 
     const keyboardListener = createKeyboardListener(document)
-    keyboardListener.subscribe(game.movePlayer)
+    keyboardListener.subscribe(game.setDirection)
 
     renderScreen(screen, game, requestAnimationFrame)
   </script>

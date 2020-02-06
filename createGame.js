@@ -4,58 +4,77 @@ export default function createGame(screen) {
     fruits: {}
   }
 
-  function addPlayer(command) {
-    const x = command.x
-    const y = command.y
-    state.players[command.id] = { x, y }
+  function addPlayer(player) {
+    const x = player.x
+    const y = player.y
+    const direction = 'right'
+
+    state.players[player.id] = { x, y, direction }
+    startMove(player.id)
   }
 
   function removePlayer(id) {
     delete state.players[id]
   }
 
-  function addFruit(command) {
-    const x = command.x
-    const y = command.y
-    state.fruits[command.id] = { x, y }
+  function addFruit(fruit) {
+    const x = fruit.x
+    const y = fruit.y
+    state.fruits[fruit.id] = { x, y }
   }
 
   function removeFruit(id) {
     delete state.fruits[id]
   }
+
+  function setDirection({ id, keyPressed }) {
+    const directions = {
+      ArrowUp: 'up',
+      ArrowDown: 'down',
+      ArrowLeft: 'left',
+      ArrowRight: 'right',
+    }
+
+    state.players[id].direction = directions[keyPressed]
+  }
   
-  function movePlayer(command) {
-    const keyPressed = command.keyPressed
-    const player = state.players[command.playerId]
+  function movePlayer({ id }) {
+    const player = state.players[id]
+    const direction = player.direction
 
     const movement = {
-      ArrowUp: player => {
-        const newPos = player.y - 1
-        if (newPos >= 0) {
-          player.y = newPos
+      up: player => {
+        let newPos = player.y - 1
+        if (newPos < 0) {
+          newPos = screen.height
         }
+        player.y = newPos
       },
-      ArrowDown: player => {
-        const newPos = player.y + 1
-        if (newPos < screen.height) {
-          player.y = newPos
+      down: player => {
+        let newPos = player.y + 1
+        if (newPos > screen.height) {
+          newPos = 0
         }
+        player.y = newPos
       },
-      ArrowLeft: player => {
-        const newPos = player.x - 1
-        if (newPos >= 0) {
-          player.x = newPos
+      left: player => {
+        let newPos = player.x - 1
+        if (newPos < 0) {
+          newPos = screen.width
         }
+        player.x = newPos
       },
-      ArrowRight: player => {
-        const newPos = player.x + 1
-        if (newPos < screen.width) {
-          player.x = newPos
+      right: player => {
+        let newPos = player.x + 1
+        if (newPos > screen.width) {
+          newPos = 0
         }
+        player.x = newPos
       },
     }
 
-    const move = movement[keyPressed]
+    const move = movement[direction]
+    
     if (player && move) {
       move(player)
       checkForFruitCollision(player)
@@ -70,10 +89,17 @@ export default function createGame(screen) {
         removeFruit(fruitId)
       }
     }
-  }      
+  }
+  
+  function startMove(playerId) {
+    setTimeout(() => {
+      movePlayer({ id: playerId })
+      startMove(playerId)
+    }, 500)
+  }
 
   return {
-    movePlayer,
+    setDirection,
     addPlayer,
     removePlayer,
     addFruit,

@@ -17,7 +17,7 @@ export default function createKeyboardListener(document) {
 
   function handleKeyDown (e) {
     const command = {
-      playerId: 'thiago',
+      id: 'thiago',
       keyPressed: event.key,
     }
 
